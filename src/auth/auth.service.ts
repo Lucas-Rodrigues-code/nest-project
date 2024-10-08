@@ -8,9 +8,13 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
 export class AuthService {
+  @Inject()
+  private readonly prisma: PrismaService;
+
   @Inject()
   private readonly userService: UserService;
 
@@ -20,7 +24,9 @@ export class AuthService {
   async signIn(
     params: Prisma.UserCreateInput,
   ): Promise<{ access_Token: string }> {
-    const user = await this.userService.user({ email: params.email });
+    const user = await this.prisma.user.findUnique({
+      where: { email: params.email },
+    });
     if (!user) throw new NotFoundException('User not found');
 
     const passwordMath = await bcrypt.compare(params.password, user.password);
