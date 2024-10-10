@@ -8,17 +8,20 @@ import {
   Post,
   Put,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Prisma, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { CreateUserDto } from './dto/createUser.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
   @Post()
-  createUser(@Body() data: Prisma.UserCreateInput) {
+  createUser(@Body(new ValidationPipe()) data: CreateUserDto) {
     return this.userService.createUser(data);
   }
 
@@ -33,7 +36,7 @@ export class UserController {
   @Put(':id')
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: Prisma.UserUpdateInput,
+    @Body(new ValidationPipe()) data: UpdateUserDto,
   ): Promise<User> {
     return this.userService.updateUser({
       where: { id },
